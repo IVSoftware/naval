@@ -188,6 +188,24 @@ namespace naval
 
         #endregion P R O P E R T I E S
 
+        private void onUpdateColor()
+        {
+            var color =
+                Sunk ? Color.Red :
+                    σημαία.Equals(σημαία.Player) ?
+                        Color.Navy :
+                        Color.DarkOliveGreen;
+            for (int x = 0; x < Image.Width; x++) for (int y = 0; y < Image.Height; y++)
+                {
+                    Bitmap bitmap = (Bitmap)Image;
+                    if (bitmap.GetPixel(x, y).R < 0x80)
+                    {
+                        bitmap.SetPixel(x, y, color);
+                    }
+                }
+            Refresh();
+        }
+
         public Point[] Hits { get; set; } = new Point[0];
         public override string ToString() =>
             $"{σημαία} {τύπος} @ {((TableLayoutPanel)Parent)?.GetCellPosition(this)}";
