@@ -175,7 +175,17 @@ namespace naval
         public bool Sunk { get; set; }
 
         [Description("Flag")]
-        public σημαία  σημαία { get; set; }
+        public σημαία σημαία
+        {
+            get => _σημαία;
+            set
+            {
+                _σημαία = value;
+                onUpdateColor();
+            }
+        }
+        σημαία _σημαία = σημαία.Player;
+
         #endregion P R O P E R T I E S
 
         public Point[] Hits { get; set; } = new Point[0];
