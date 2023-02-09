@@ -13,8 +13,6 @@ namespace naval
     public partial class Form2 : Form
     {
         internal const int Size_grid = 10;
-        internal Color ColorUp = Color.LightGray;
-        internal Color ColorDown = Color.DarkGray;
         public Form2() =>InitializeComponent();
         protected override void OnLoad(EventArgs e)
         {
@@ -109,7 +107,7 @@ namespace naval
                         default: throw new NotImplementedException();
                     }
                     ship.Click += onAnyShipClick;
-                    grid.Add(ship, column, row, hidden: flag.Equals(σημαία.Opponent));
+                    grid.Add(ship, column, row);
                 }
             }
             grid.AddMisses();
@@ -235,7 +233,7 @@ namespace naval
     }
     class TableLayoutPanelNaval : TableLayoutPanel
     {
-        public void Add(Ship ship, int column, int row, bool hidden) 
+        public void Add(Ship ship, int column, int row) 
         {
             switch (ship.σημαία)
             {
