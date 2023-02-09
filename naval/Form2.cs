@@ -203,7 +203,17 @@ namespace naval
         bool _sunk = false;
 
         [Description("Flag")]
-        public σημαία  σημαία { get; set; }
+        σημαία _σημαία = 0;
+        public σημαία σημαία
+        {
+            get => _σημαία;
+            set
+            {
+                _σημαία = value;
+                onUpdateColor();
+            }
+        }
+
         #endregion P R O P E R T I E S
 
         private void onUpdateColor()
