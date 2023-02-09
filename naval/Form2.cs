@@ -19,9 +19,9 @@ namespace naval
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+            Size = new Size(500, 800);
             buttonNewGame.Click += onNewGame;
             buttonNewGame.PerformClick();
-            Size = new Size(500, 800);
         }
 
         private void onNewGame(object sender, EventArgs e)
