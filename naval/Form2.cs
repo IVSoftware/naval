@@ -13,8 +13,6 @@ namespace naval
     public partial class Form2 : Form
     {
         internal const int Size_grid = 10;
-        internal Color ColorUp = Color.LightGray;
-        internal Color ColorDown = Color.DarkGray;
         public Form2() =>InitializeComponent();
         protected override void OnLoad(EventArgs e)
         {
@@ -92,7 +90,7 @@ namespace naval
                         τύπος = shipType,
                         σημαία = flag,
                         SizeMode = PictureBoxSizeMode.StretchImage,
-                        BackColor = flag.Equals(σημαία.Player) ? Color.CadetBlue : Color.LightSalmon,
+                        BackColor = flag.Equals(σημαία.Player) ? Color.CadetBlue : Color.DarkOliveGreen,
                         Anchor = (AnchorStyles)0xF, // Let table layout panel set the size
                         Hits = hits,
                         Padding = new Padding(0),
@@ -109,7 +107,7 @@ namespace naval
                         default: throw new NotImplementedException();
                     }
                     ship.Click += onAnyShipClick;
-                    grid.Add(ship, column, row, hidden: flag.Equals(σημαία.Opponent));
+                    grid.Add(ship, column, row);
                 }
             }
             grid.AddMisses();
@@ -119,23 +117,7 @@ namespace naval
         {
             if (sender is Ship ship)
             {
-                if (ship.σημαία.Equals(σημαία.Opponent) && ship.Hits.Any())
-                {
-                    Point position = ship.Hits[0];
-                    opponentBoard.Visible = false;
-                    ship.Sunk = true;
-                    foreach (var hit in ship.Hits)
-                    {
-                        opponentBoard.Controls.Remove(opponentBoard.GetControlFromPosition(hit.X, hit.Y));
-                    }
-                    ship.Hits = new Point[0];
-                    opponentBoard.Controls.Add(ship, position.X, position.Y);
-                    opponentBoard.Visible = true;
-                }
-                else
-                {
-                    MessageBox.Show(ship.ToString());
-                }
+                MessageBox.Show(ship.ToString());
             }
         }
     }
@@ -190,42 +172,12 @@ namespace naval
         }
         τύπος _τύπος = 0;
 
-        public bool Sunk
-        {
-            get => _sunk;
-            set
-            {
-                if (!Equals(_sunk, value))
-                {
-                    _sunk = value;
-                    onUpdateColor();
-                }
-            }
-        }
-        bool _sunk = false;
+        public bool Sunk { get; set; }
 
         [Description("Flag")]
         public σημαία  σημαία { get; set; }
         #endregion P R O P E R T I E S
 
-        private void onUpdateColor()
-        {
-            var color = 
-                Sunk? Color.Red :
-                    σημαία.Equals(σημαία.Player) ? 
-                        Color.Navy : 
-                        Color.DarkOliveGreen;
-            for (int x = 0; x < Image.Width; x++) for (int y = 0; y < Image.Height; y++)
-                {
-                    Bitmap bitmap = (Bitmap)Image;
-                    if (bitmap.GetPixel(x, y).R < 0x80)
-                    {
-                        bitmap.SetPixel(x, y, color);
-                    }
-                }
-            Refresh();
-        }
-        public void PerformClick() => base.OnClick(EventArgs.Empty);
         public Point[] Hits { get; set; } = new Point[0];
         public override string ToString() =>
             $"{σημαία} {τύπος} @ {((TableLayoutPanel)Parent)?.GetCellPosition(this)}";
@@ -235,28 +187,9 @@ namespace naval
     }
     class TableLayoutPanelNaval : TableLayoutPanel
     {
-        public void Add(Ship ship, int column, int row, bool hidden) 
+        public void Add(Ship ship, int column, int row) 
         {
-            switch (ship.σημαία)
-            {
-                case σημαία.Player: Controls.Add(ship, column, row); break;
-                case σημαία.Opponent:
-                    foreach (var point in ship.Hits)
-                    {
-                        Panel hit = new Panel 
-                        { 
-                            BackColor = Color.Aqua,
-                            Padding = new Padding(0),
-                            Margin = new Padding(1),
-                            BorderStyle= BorderStyle.FixedSingle,
-                        };
-                        // Forward to hidden ship
-                        hit.Click += (sender, e) => ship.PerformClick();
-                        Controls.Add(hit, point.X, point.Y);
-                    }
-                    break;
-                default: throw new NotImplementedException();
-            }
+            Controls.Add(ship, column, row); 
         }
 
         internal void AddMisses()
