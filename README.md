@@ -1,8 +1,11 @@
 One approach that you might find helpful would be to bundle up all the information about a `Ship` into a class. This is an [abstraction](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/tutorials/oop) that could make it easier for **displaying ship names when they are sunk**. At the same time, use [inheritance](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/tutorials/oop) so that a `Ship` is still a `PictureBox` with all the functionality that implies.
 ***
+
+[![screenshot][1]][1]
+
 **Ship minimal class example**
 
-Member properties tell us what we know about a ship. Use `enum` values to make the intent perfectly clear. 
+Member properties tell us what we need know about a ship. Use `enum` values to make the intent perfectly clear. 
 
     class Ship : PictureBox
     {
@@ -41,6 +44,7 @@ Member properties tell us what we know about a ship. Use `enum` values to make t
             }
         }
         σημαία _σημαία = σημαία.Player;
+        #endregion P R O P E R T I E S
 
         private void onUpdateColor()
         {
@@ -59,7 +63,6 @@ Member properties tell us what we know about a ship. Use `enum` values to make t
                 }
             Refresh();
         }
-        #endregion P R O P E R T I E S
 
         public Point[] Hits { get; set; } = new Point[0];
         public override string ToString() =>
@@ -103,7 +106,7 @@ _Where `enum` values are:_
  ***
  **Displaying ships names when they are sunk** 
 
- When the inherited `Ship` version of `PictureBox` is clicked the information is now available.
+When the inherited `Ship` version of `PictureBox` is clicked the information is now available.
 
     private void onAnyShipClick(object sender, EventArgs e)
     {
@@ -112,3 +115,10 @@ _Where `enum` values are:_
             MessageBox.Show(ship.ToString());
         }
     }
+
+***
+Images credit: [Robuart](https://www.istockphoto.com/portfolio/robuart)
+Used under license.
+
+
+  [1]: https://i.stack.imgur.com/ilu8G.png
