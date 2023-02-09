@@ -203,7 +203,6 @@ namespace naval
         bool _sunk = false;
 
         [Description("Flag")]
-        σημαία _σημαία = 0;
         public σημαία σημαία
         {
             get => _σημαία;
@@ -213,6 +212,7 @@ namespace naval
                 onUpdateColor();
             }
         }
+        σημαία _σημαία = σημαία.Player;
 
         #endregion P R O P E R T I E S
 
