@@ -21,6 +21,7 @@ namespace naval
             base.OnLoad(e);
             buttonNewGame.Click += onNewGame;
             buttonNewGame.PerformClick();
+            Size = new Size(500, 800);
         }
 
         private void onNewGame(object sender, EventArgs e)
@@ -94,6 +95,9 @@ namespace naval
                         BackColor = flag.Equals(σημαία.Player) ? Color.CadetBlue : Color.LightSalmon,
                         Anchor = (AnchorStyles)0xF, // Let table layout panel set the size
                         Hits = hits,
+                        Padding = new Padding(0),
+                        Margin = new Padding(1),
+                        BorderStyle = BorderStyle.FixedSingle,
                     };
                     switch (direction)
                     {
@@ -239,7 +243,13 @@ namespace naval
                 case σημαία.Opponent:
                     foreach (var point in ship.Hits)
                     {
-                        Panel hit = new Panel { BackColor = Color.Aqua };
+                        Panel hit = new Panel 
+                        { 
+                            BackColor = Color.Aqua,
+                            Padding = new Padding(0),
+                            Margin = new Padding(1),
+                            BorderStyle= BorderStyle.FixedSingle,
+                        };
                         // Forward to hidden ship
                         hit.Click += (sender, e) => ship.PerformClick();
                         Controls.Add(hit, point.X, point.Y);
@@ -256,7 +266,13 @@ namespace naval
                 {
                     if (GetControlFromPosition(column, row) == null)
                     {
-                        var miss = new Panel { BackColor = Color.LightGray };
+                        var miss = new Panel 
+                        { 
+                            BackColor = Color.LightGray,
+                            Padding = new Padding(0),
+                            Margin = new Padding(1),
+                            BorderStyle = BorderStyle.FixedSingle,
+                        };
                         miss.Click += (sender, e) => ((Control)sender).BackColor = Color.DarkGray;
                         Controls.Add(miss, column, row);
                     }
