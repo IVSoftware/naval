@@ -174,7 +174,6 @@ namespace naval
 
         public bool Sunk { get; set; }
 
-
         [Description("Flag")]
         public σημαία σημαία
         {
