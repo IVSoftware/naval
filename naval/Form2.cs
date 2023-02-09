@@ -164,7 +164,8 @@ namespace naval
     }
     class Ship : PictureBox
     {
-        τύπος _τύπος = 0;
+        #region P R O P E R T I E S
+        [Description("Type")]
         public τύπος τύπος
         {
             get => _τύπος;
@@ -180,26 +181,11 @@ namespace naval
                         case τύπος.Πολεμικό: Image = Image.FromFile(Path.Combine(_imageDir, "military.png")); break;
                         case τύπος.Υποβρύχιο: Image = Image.FromFile(Path.Combine(_imageDir, "submarine.png")); break;
                     }
-                    OnPropertyChanged();
                 }
             }
         }
+        τύπος _τύπος = 0;
 
-        [Description("Flag")]
-        σημαία _σημαία = 0;
-        public σημαία  σημαία 
-        {
-            get => _σημαία ;
-            set
-            {
-                if (!Equals(_σημαία , value))
-                {
-                    _σημαία  = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        bool _sunk = false;
         public bool Sunk
         {
             get => _sunk;
@@ -208,10 +194,15 @@ namespace naval
                 if (!Equals(_sunk, value))
                 {
                     _sunk = value;
-                    OnPropertyChanged();
+                    onUpdateColor();
                 }
             }
         }
+        bool _sunk = false;
+
+        [Description("Flag")]
+        public σημαία  σημαία { get; set; }
+        #endregion P R O P E R T I E S
 
         private void onUpdateColor()
         {
@@ -234,14 +225,9 @@ namespace naval
         public Point[] Hits { get; set; } = new Point[0];
         public override string ToString() =>
             $"{σημαία} {τύπος} @ {((TableLayoutPanel)Parent)?.GetCellPosition(this)}";
+
         private readonly static string _imageDir =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            onUpdateColor();
-        }
     }
     class TableLayoutPanelNaval : TableLayoutPanel
     {

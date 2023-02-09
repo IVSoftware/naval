@@ -6,7 +6,8 @@ Member properties tell us what we know about a ship. Use `enum` values to make t
 
     class Ship : PictureBox
     {
-        τύπος _τύπος = 0;
+        #region P R O P E R T I E S
+        [Description("Type")]
         public τύπος τύπος
         {
             get => _τύπος;
@@ -25,10 +26,47 @@ Member properties tell us what we know about a ship. Use `enum` values to make t
                 }
             }
         }
+        τύπος _τύπος = 0;
+
+        public bool Sunk
+        {
+            get => _sunk;
+            set
+            {
+                if (!Equals(_sunk, value))
+                {
+                    _sunk = value;
+                    onUpdateColor();
+                }
+            }
+        }
+        bool _sunk = false;
 
         [Description("Flag")]
-        public σημαία σημαία { get; set; }
-        public bool Sunk { get; set; }
+        public σημαία  σημαία { get; set; }
+        #endregion P R O P E R T I E S
+
+        private void onUpdateColor()
+        {
+            var color = 
+                Sunk? Color.Red :
+                    σημαία.Equals(σημαία.Player) ? 
+                        Color.Navy : 
+                        Color.DarkOliveGreen;
+            for (int x = 0; x < Image.Width; x++) for (int y = 0; y < Image.Height; y++)
+                {
+                    Bitmap bitmap = (Bitmap)Image;
+                    if (bitmap.GetPixel(x, y).R < 0x80)
+                    {
+                        bitmap.SetPixel(x, y, color);
+                    }
+                }
+            Refresh();
+        }
+        public void PerformClick() => base.OnClick(EventArgs.Empty);
+        public Point[] Hits { get; set; } = new Point[0];
+        public override string ToString() =>
+            $"{σημαία} {τύπος} @ {((TableLayoutPanel)Parent)?.GetCellPosition(this)}";
 
         private readonly static string _imageDir =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images");
@@ -71,19 +109,174 @@ Another thing would be to combine the functionality of things like `playerBoard`
     // Initially configured as a 10 x 10 grid.
     class TableLayoutPanelNaval : TableLayoutPanel
     {
-        public Ship this[int column, int row]
+        public void Add(Ship ship, int column, int row, bool hidden) 
         {
-            get
+            switch (ship.σημαία)
             {
-                return (Ship)GetControlFromPosition(column, row);
+                case σημαία.Player: Controls.Add(ship, column, row); break;
+                case σημαία.Opponent:
+                    foreach (var point in ship.Hits)
+                    {
+                        Panel hit = new Panel { BackColor = Color.Aqua };
+                        // Forward to hidden ship
+                        hit.Click += (sender, e) => ship.PerformClick();
+                        Controls.Add(hit, point.X, point.Y);
+                    }
+                    break;
+                default: throw new NotImplementedException();
             }
+        }
+
+        internal void AddMisses()
+        {
+            var dim = Form2.Size_grid;
+            for (int column = 0; column < dim; column++) for (int row = 0; row < dim; row++)
+                {
+                    if (GetControlFromPosition(column, row) == null)
+                    {
+                        var miss = new Panel { BackColor = Color.LightGray };
+                        miss.Click += (sender, e) => ((Control)sender).BackColor = Color.DarkGray;
+                        Controls.Add(miss, column, row);
+                    }
+                }
         }
     }
 
  ***
- **Initialize board and game**
+ **Testing**
 
  By adding a `Click` handler to every `Ship`, the information you require to sink a ship is readily available.
+
+     public partial class Form2 : Form
+    {
+        internal const int Size_grid = 10;
+        internal Color ColorUp = Color.LightGray;
+        internal Color ColorDown = Color.DarkGray;
+        public Form2() =>InitializeComponent();
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            buttonNewGame.Click += onNewGame;
+            buttonNewGame.PerformClick();
+        }
+
+        private void onNewGame(object sender, EventArgs e)
+        {
+            playerBoard.Visible = false;
+            opponentBoard.Visible = false;
+            playerBoard.Controls.Clear();
+            opponentBoard.Controls.Clear();
+            PlaceShips(grid: playerBoard, flag: σημαία.Player);
+            PlaceShips(grid: opponentBoard, flag: σημαία.Opponent);
+            playerBoard.Visible = true;
+            opponentBoard.Visible = true;
+        }
+
+#if DEBUG
+        private readonly Random _random = new Random(10);
+#else
+        // Random, by default, seeds using the current DateTime.
+        private readonly Random _random = new Random();
+#endif
+        private void PlaceShips(TableLayoutPanelNaval grid, σημαία flag)
+        {
+            foreach (τύπος shipType in Enum.GetValues(typeof(τύπος)))
+            {
+                const int MAX_TRIES = 100;
+                int tries = 1;
+                Direction direction = (Direction)_random.Next(2);
+             retry:
+                if(tries < MAX_TRIES)
+                {
+                    int column, row;
+                    switch (direction)
+                    {
+                        case Direction.Horizontal:
+                            row = _random.Next(Size_grid);
+                            column = _random.Next(Size_grid - (int)shipType);
+                            break;
+                        case Direction.Vertical:
+                            row = _random.Next(Size_grid - (int)shipType);
+                            column = _random.Next(Size_grid);
+                            break;
+                        default: throw new NotImplementedException();
+                    }
+
+                    int span = (int)shipType;
+                    Point[] hits;
+                    switch (direction)
+                    {
+                        case Direction.Horizontal:
+                            hits = Enumerable.Range(column, span).Select(_ => new Point(_, row)).ToArray();
+                            break;
+                        case Direction.Vertical:
+                            hits = Enumerable.Range(row, span).Select(_ => new Point(column, _)).ToArray();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
+
+                    foreach (var hit in hits)
+                    {
+                        if (grid.GetControlFromPosition(hit.X, hit.Y) != null)
+                        {
+                            tries++;
+                            goto retry;
+                        }
+                    }
+                    Ship ship = new Ship
+                    {
+                        τύπος = shipType,
+                        σημαία = flag,
+                        SizeMode = PictureBoxSizeMode.StretchImage,
+                        BackColor = flag.Equals(σημαία.Player) ? Color.CadetBlue : Color.LightSalmon,
+                        Anchor = (AnchorStyles)0xF, // Let table layout panel set the size
+                        Hits = hits,
+                    };
+                    switch (direction)
+                    {
+                        case Direction.Horizontal: grid.SetColumnSpan(ship, span); break;
+                        case Direction.Vertical:
+                            grid.SetRowSpan(ship, span);
+                            ship.Image.RotateFlip(RotateFlipType.Rotate90FlipX);
+                            break;
+                        default: throw new NotImplementedException();
+                    }
+                    ship.Click += onAnyShipClick;
+                    grid.Add(ship, column, row, hidden: flag.Equals(σημαία.Opponent));
+                }
+            }
+            grid.AddMisses();
+        }
+        .
+        .
+        .
+    }
+
+    ***    
+
+        private void onAnyShipClick(object sender, EventArgs e)
+        {
+            if (sender is Ship ship)
+            {
+                if (ship.σημαία.Equals(σημαία.Opponent) && ship.Hits.Any())
+                {
+                    Point position = ship.Hits[0];
+                    opponentBoard.Visible = false;
+                    ship.Sunk = true;
+                    foreach (var hit in ship.Hits)
+                    {
+                        opponentBoard.Controls.Remove(opponentBoard.GetControlFromPosition(hit.X, hit.Y));
+                    }
+                    ship.Hits = new Point[0];
+                    opponentBoard.Controls.Add(ship, position.X, position.Y);
+                    opponentBoard.Visible = true;
+                }
+                else
+                {
+                    MessageBox.Show(ship.ToString());
+                }
+            }
+        }
 
 
 
