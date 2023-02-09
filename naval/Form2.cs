@@ -174,8 +174,36 @@ namespace naval
 
         public bool Sunk { get; set; }
 
+
         [Description("Flag")]
-        public σημαία  σημαία { get; set; }
+        public σημαία σημαία
+        {
+            get => _σημαία;
+            set
+            {
+                _σημαία = value;
+                onUpdateColor();
+            }
+        }
+        σημαία _σημαία = σημαία.Player;
+
+        private void onUpdateColor()
+        {
+            var color =
+                Sunk ? Color.Red :
+                    σημαία.Equals(σημαία.Player) ?
+                        Color.Navy :
+                        Color.DarkOliveGreen;
+            for (int x = 0; x < Image.Width; x++) for (int y = 0; y < Image.Height; y++)
+                {
+                    Bitmap bitmap = (Bitmap)Image;
+                    if (bitmap.GetPixel(x, y).R < 0x80)
+                    {
+                        bitmap.SetPixel(x, y, color);
+                    }
+                }
+            Refresh();
+        }
         #endregion P R O P E R T I E S
 
         public Point[] Hits { get; set; } = new Point[0];
